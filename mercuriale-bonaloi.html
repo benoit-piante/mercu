@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mercuriale BONALOI</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff; --bg2: #f5f4f0; --bg3: #eeece7;
+    --text: #1a1a1a; --text2: #666; --text3: #999;
+    --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.2);
+    --info-bg: #e8f0fe; --info: #1a56db;
+    --success-bg: #def7ec; --success: #057a55;
+    --danger-bg: #fde8e8; --danger: #c81e1e;
+    --warning-bg: #fdf6b2; --warning: #8e4b10;
+    --radius: 8px; --radius-lg: 12px;
+  }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg2); color: var(--text); min-height: 100vh; }
+  .app { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border); }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 38px; height: 38px; background: var(--text); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 15px; letter-spacing: -0.5px; }
+  .logo-text h1 { font-size: 17px; font-weight: 600; }
+  .logo-text p { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .tabs { display: flex; gap: 4px; background: var(--bg3); padding: 4px; border-radius: var(--radius); margin-bottom: 1.75rem; }
+  .tab { flex: 1; padding: 8px 16px; border-radius: 6px; border: none; background: transparent; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text2); transition: all 0.15s; }
+  .tab.active { background: white; color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .section { display: none; }
+  .section.active { display: block; }
+  /* Cards */
+  .card { background: white; border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 1.5rem; margin-bottom: 1.5rem; }
+  /* Drop zone */
+  .drop-zone { border: 2px dashed var(--border2); border-radius: var(--radius-lg); padding: 3rem 2rem; text-align: center; cursor: pointer; transition: all 0.15s; }
+  .drop-zone:hover, .drop-zone.over { background: var(--info-bg); border-color: var(--info); }
+  .drop-icon { font-size: 36px; margin-bottom: 12px; }
+  .drop-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .drop-sub { font-size: 13px; color: var(--text2); }
+  .file-pill { display: inline-flex; align-items: center; gap: 8px; background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 13px; margin-top: 1rem; }
+  .file-remove { cursor: pointer; color: var(--text3); font-size: 16px; line-height: 1; }
+  .file-remove:hover { color: var(--danger); }
+  /* Progress */
+  .progress-wrap { margin-top: 1rem; }
+  .progress-label { font-size: 13px; color: var(--text2); margin-bottom: 6px; }
+  .progress-bar-bg { height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+  .progress-bar { height: 100%; background: var(--text); border-radius: 2px; transition: width 0.4s ease; }
+  /* Alerts */
+  .alert { padding: 10px 14px; border-radius: var(--radius); font-size: 13px; margin-top: 1rem; }
+  .alert-danger { background: var(--danger-bg); color: var(--danger); }
+  .alert-success { background: var(--success-bg); color: var(--success); }
+  .alert-info { background: var(--info-bg); color: var(--info); }
+  /* Buttons */
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: var(--radius); border: 1px solid var(--border2); background: white; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; color: var(--text); }
+  .btn:hover { background: var(--bg2); }
+  .btn-primary { background: var(--text); color: white; border-color: var(--text); }
+  .btn-primary:hover { opacity: 0.85; background: var(--text); }
+  .btn-danger { border-color: var(--danger); color: var(--danger); }
+  .btn-danger:hover { background: var(--danger-bg); }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-row { display: flex; gap: 8px; align-items: center; margin-top: 1rem; flex-wrap: wrap; }
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+  .stat { background: var(--bg2); border-radius: var(--radius); padding: 14px 16px; }
+  .stat-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+  .stat-value { font-size: 24px; font-weight: 600; }
+  .stat-value.red { color: var(--danger); }
+  .stat-value.green { color: var(--success); }
+  /* Table */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 10px 12px; color: var(--text2); font-weight: 500; border-bottom: 1px solid var(--border); font-size: 12px; white-space: nowrap; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg2); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .badge-info { background: var(--info-bg); color: var(--info); }
+  .badge-success { background: var(--success-bg); color: var(--success); }
+  .badge-danger { background: var(--danger-bg); color: var(--danger); }
+  .badge-warning { background: var(--warning-bg); color: var(--warning); }
+  .badge-new { background: #d1fae5; color: #065f46; font-size: 10px; }
+  /* Search row */
+  .search-row { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; }
+  .search-row input, .search-row select { flex: 1; min-width: 140px; padding: 8px 12px; border: 1px solid var(--border2); border-radius: var(--radius); font-size: 13px; background: white; color: var(--text); outline: none; }
+  .search-row input:focus, .search-row select:focus { border-color: var(--info); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
+  .search-row select { flex: 0 0 200px; }
+  /* Results header */
+  .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 8px; }
+  /* Modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: white; border-radius: var(--radius-lg); padding: 1.75rem; width: 440px; max-width: 95vw; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+  .modal h2 { font-size: 16px; font-weight: 600; margin-bottom: 1.25rem; }
+  .form-group { margin-bottom: 14px; }
+  .form-label { display: block; font-size: 12px; font-weight: 500; color: var(--text2); margin-bottom: 5px; }
+  .form-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border2); border-radius: var(--radius); font-size: 13px; color: var(--text); outline: none; background: white; }
+  .form-input:focus { border-color: var(--info); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 1.5rem; }
+  .modal-error { font-size: 12px; color: var(--danger); margin-bottom: 10px; }
+  /* Truncate */
+  .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+  /* Responsive */
+  @media (max-width: 640px) {
+    .stats { grid-template-columns: 1fr 1fr; }
+    .search-row select { flex: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-icon">B</div>
+      <div class="logo-text">
+        <h1>Mercuriale BONALOI</h1>
+        <p id="headerSub">177 produits · 14 fournisseurs · Mise à jour 16/03/2026</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('analyse', this)">📄 Analyser une facture PDF</button>
+    <button class="tab" onclick="switchTab('mercuriale', this)">📋 Mercuriale de référence</button>
+  </div>
+
+  <!-- ONGLET ANALYSE -->
+  <div id="tab-analyse" class="section active">
+    <div class="card">
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()"
+        ondragover="handleDragOver(event)" ondragleave="handleDragLeave()" ondrop="handleDrop(event)">
+        <div class="drop-icon">📄</div>
+        <div class="drop-title">Déposer une facture PDF ici</div>
+        <div class="drop-sub">ou cliquer pour sélectionner un fichier</div>
+      </div>
+      <input type="file" id="fileInput" accept=".pdf" style="display:none" onchange="handleFileSelect(event)">
+      <div id="filePill" style="display:none">
+        <span class="file-pill">📄 <span id="fileName"></span> <span class="file-remove" onclick="clearFile()">×</span></span>
+      </div>
+      <div id="progressWrap" style="display:none" class="progress-wrap">
+        <div class="progress-label" id="progressLabel">Lecture du PDF...</div>
+        <div class="progress-bar-bg"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+      </div>
+      <div id="errorBlock" style="display:none" class="alert alert-danger"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="analyzeBtn" onclick="analyzePDF()" disabled>Analyser les écarts →</button>
+        <button class="btn" onclick="clearAll()">Réinitialiser</button>
+        <span style="font-size:12px;color:var(--text3)">Les nouveaux produits détectés pourront être ajoutés à la mercuriale</span>
+      </div>
+    </div>
+
+    <div id="results" style="display:none">
+      <div id="newBanner" style="display:none" class="alert alert-success" style="margin-bottom:1rem"></div>
+      <div class="stats" id="statsGrid"></div>
+      <div class="card" style="padding:1rem 1.5rem">
+        <div class="results-header">
+          <span style="font-size:14px;font-weight:600" id="resultsTitle"></span>
+          <select style="padding:6px 10px;border:1px solid var(--border2);border-radius:var(--radius);font-size:13px;background:white" onchange="filterResults(this.value)">
+            <option value="all">Tous les résultats</option>
+            <option value="surcharge">Sur-facturations uniquement</option>
+            <option value="ok">Conformes uniquement</option>
+            <option value="notfound">Non trouvés</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th style="width:24px"></th>
+              <th style="width:18%">Fournisseur</th>
+              <th>Produit facturé</th>
+              <th style="width:11%;text-align:right">Facturé</th>
+              <th style="width:11%;text-align:right">Négocié</th>
+              <th style="width:15%;text-align:right">Écart</th>
+            </tr></thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
+        </div>
+        <div id="addNewBtn" style="display:none;margin-top:1.25rem">
+          <button class="btn btn-primary" onclick="addNewToMercuriale()">+ Ajouter les produits non trouvés à la mercuriale</button>
+          <span style="font-size:12px;color:var(--text3);margin-left:10px">Le prix facturé devient le prix de référence</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ONGLET MERCURIALE -->
+  <div id="tab-mercuriale" class="section">
+    <div class="card" style="padding:1rem 1.5rem">
+      <div class="search-row">
+        <input type="text" placeholder="Rechercher un produit..." oninput="filterTable()" id="searchInput">
+        <select id="filterFourn" onchange="filterTable()">
+          <option value="">Tous les fournisseurs</option>
+        </select>
+        <button class="btn btn-primary" onclick="openModal()">+ Ajouter un produit</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th style="width:30px"></th>
+            <th style="width:20%">Fournisseur</th>
+            <th>Produit</th>
+            <th style="width:12%">Unité</th>
+            <th style="width:13%;text-align:right">Prix négocié HT</th>
+            <th style="width:80px;text-align:right">Actions</th>
+          </tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <p style="font-size:12px;color:var(--text3);margin-top:10px" id="countLabel"></p>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <h2 id="modalTitle">Ajouter un produit</h2>
+    <div class="form-group">
+      <label class="form-label">Fournisseur</label>
+      <input class="form-input" id="mFourn" list="fournList" placeholder="ex: Gustant">
+      <datalist id="fournList"></datalist>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nom du produit</label>
+      <input class="form-input" id="mProduit" placeholder="ex: Fenouil">
+    </div>
+    <div class="form-row-2">
+      <div class="form-group">
+        <label class="form-label">Unité</label>
+        <input class="form-input" id="mUnite" placeholder="ex: kg">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Prix négocié HT (€)</label>
+        <input class="form-input" id="mPrix" type="number" step="0.001" min="0" placeholder="ex: 7.90">
+      </div>
+    </div>
+    <div id="modalErr" class="modal-error" style="display:none"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="saveModal()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const MERCURIALE_BASE = [{"fournisseur":"ADC Selection","produit":"Kasnodar Caviar Baeri Black 100g","unite":"unité","prix":55.6},{"fournisseur":"Cercle Vert","produit":"Chapelure Japonais Panko","unite":"kg","prix":4.4},{"fournisseur":"Cercle Vert","produit":"Coquillette QS","unite":"sac 5kg","prix":16.9},{"fournisseur":"Cercle Vert","produit":"Pignons de Pin","unite":"kg","prix":22.5},{"fournisseur":"Cercle Vert","produit":"Sel Gros Guérande IGP","unite":"kg","prix":1.55},{"fournisseur":"Cercle Vert","produit":"Huile Tournesol","unite":"bt 5L","prix":8.415},{"fournisseur":"Cercle Vert","produit":"Piment Espelette AOP","unite":"S250g","prix":15.0},{"fournisseur":"Cercle Vert","produit":"Sel Fin","unite":"kg","prix":0.43},{"fournisseur":"Cercle Vert","produit":"Sucre Glace Pulvérisé","unite":"sac 10kg","prix":18.8},{"fournisseur":"Cercle Vert","produit":"Farine de Blé T55","unite":"sac 25kg","prix":21.9},{"fournisseur":"Cercle Vert","produit":"Semoule Couscous Moyen","unite":"sac 5kg","prix":6.5},{"fournisseur":"Cercle Vert","produit":"Lait de Coco","unite":"bt 1L","prix":3.1},{"fournisseur":"Cercle Vert","produit":"Huile Tournesol Friture","unite":"bt 10L","prix":16.341},{"fournisseur":"Cercle Vert","produit":"Moutarde de Dijon","unite":"sac 5kg","prix":8.6},{"fournisseur":"Cercle Vert","produit":"Pâte de Sésame Tahine","unite":"pot 900g","prix":9.011},{"fournisseur":"Cercle Vert","produit":"Poivre Noir Grains","unite":"kg","prix":13.5},{"fournisseur":"Cercle Vert","produit":"Sirop d'Érable","unite":"bt 4L","prix":59.6},{"fournisseur":"Cercle Vert","produit":"Sucre Semoule","unite":"sac 20kg","prix":19.0},{"fournisseur":"Cercle Vert","produit":"Câpres Fines 11/12mm","unite":"4/4","prix":2.75},{"fournisseur":"Cercle Vert","produit":"Paprika Doux","unite":"500g","prix":3.714},{"fournisseur":"Cercle Vert","produit":"Sel Fleur de Guérande IGP","unite":"S500g","prix":5.3},{"fournisseur":"Cercle Vert","produit":"Vinaigre Alcool Blanc","unite":"bt 1L5","prix":0.659},{"fournisseur":"Cercle Vert","produit":"Vinaigre de Xérès AOP","unite":"bt 1L","prix":4.05},{"fournisseur":"Cercle Vert","produit":"Acide Citrique","unite":"kg","prix":14.229},{"fournisseur":"Cercle Vert","produit":"Riz Basmati","unite":"sac 5kg","prix":19.0},{"fournisseur":"Cercle Vert","produit":"Maïzena","unite":"C 2.5kg","prix":13.29},{"fournisseur":"Cercle Vert","produit":"Gélatine Poisson Poudre","unite":"kg","prix":51.974},{"fournisseur":"Cercle Vert","produit":"Amandes Poudre","unite":"kg","prix":9.3},{"fournisseur":"Cercle Vert","produit":"Cacahuètes non salées","unite":"kg","prix":4.9},{"fournisseur":"Cercle Vert","produit":"Tomates Concentré 1/2","unite":"boîte","prix":1.7},{"fournisseur":"Cercle Vert","produit":"Penne Rigate","unite":"sac 3kg","prix":9.2},{"fournisseur":"Cercle Vert","produit":"Agar Agar Algues Rouges","unite":"kg","prix":68.0},{"fournisseur":"Cercle Vert","produit":"Vin Blanc BIB","unite":"bt 10L","prix":15.9},{"fournisseur":"Cercle Vert","produit":"Corn Flakes","unite":"B750g","prix":3.9},{"fournisseur":"Cercle Vert","produit":"Graine Moutarde","unite":"225g","prix":3.36},{"fournisseur":"Cercle Vert","produit":"Farine de Riz","unite":"sac 5kg","prix":5.9},{"fournisseur":"Cercle Vert","produit":"Maïzena","unite":"C 2.5kg","prix":12.567},{"fournisseur":"Cercle Vert","produit":"Fonds Brun Concentré","unite":"bt 1L","prix":24.9},{"fournisseur":"Cercle Vert","produit":"Glucose","unite":"kg","prix":4.211},{"fournisseur":"Gustant","produit":"Blettes","unite":"kg","prix":4.79},{"fournisseur":"Gustant","produit":"Carottes botte","unite":"u","prix":2.28},{"fournisseur":"Gustant","produit":"Carottes nantaise 28/50 - 10kg","unite":"colis 10kg","prix":10.9},{"fournisseur":"Gustant","produit":"Champignon Paris blanc - 3kg","unite":"colis 3kg","prix":6.95},{"fournisseur":"Gustant","produit":"Champignon Paris Blond - 3kg","unite":"colis 3kg","prix":6.95},{"fournisseur":"Gustant","produit":"Pleurotes - 2kg","unite":"colis 2kg","prix":11.9},{"fournisseur":"Gustant","produit":"Chou fleur","unite":"u","prix":4.95},{"fournisseur":"Gustant","produit":"Oignons rouges - 10kg","unite":"colis 10kg","prix":6.35},{"fournisseur":"Gustant","produit":"Panais","unite":"kg","prix":2.99},{"fournisseur":"Gustant","produit":"Potimarron","unite":"kg","prix":3.2},{"fournisseur":"Gustant","produit":"Topinambour","unite":"kg","prix":3.13},{"fournisseur":"Gustant","produit":"Aneth","unite":"u","prix":1.45},{"fournisseur":"Gustant","produit":"Cerfeuil","unite":"u","prix":1.45},{"fournisseur":"Gustant","produit":"Estragon","unite":"u","prix":1.45},{"fournisseur":"Gustant","produit":"Persil plat","unite":"u","prix":1.5},{"fournisseur":"Gustant","produit":"Oeufs plein air - Gros","unite":"u","prix":0.24},{"fournisseur":"Gustant","produit":"Cerneaux Noix - brisures","unite":"colis 2kg","prix":39.0},{"fournisseur":"Gustant","produit":"Oeufs de truites - 90gr","unite":"u","prix":8.9},{"fournisseur":"Gustant","produit":"Grosse truite arc en ciel éviscérée","unite":"kg","prix":14.9},{"fournisseur":"Gustant","produit":"Cerneaux Noix - brisures","unite":"colis 2kg","prix":19.5},{"fournisseur":"Gustant","produit":"Betteraves crues","unite":"kg","prix":1.95},{"fournisseur":"Gustant","produit":"Butternut","unite":"kg","prix":3.5},{"fournisseur":"Gustant","produit":"Chou fleur","unite":"u","prix":3.5},{"fournisseur":"Gustant","produit":"Echalotes grosses - 5kg","unite":"colis 5kg","prix":7.6},{"fournisseur":"Gustant","produit":"Epinards","unite":"kg","prix":5.99},{"fournisseur":"Gustant","produit":"PDT Excellency spéciale frite 55/75 - 50kg","unite":"colis 50kg","prix":49.0},{"fournisseur":"Gustant","produit":"Poires conférences - 10kg","unite":"colis 10kg","prix":2.4},{"fournisseur":"Gustant","produit":"Lentilles Vertes - 5kg","unite":"sac 5kg","prix":5.31},{"fournisseur":"Gustant","produit":"Huile de Colza - 5L","unite":"bt 5L","prix":31.0},{"fournisseur":"Gustant","produit":"Chou kale","unite":"kg","prix":6.25},{"fournisseur":"Gustant","produit":"Ail blanc","unite":"kg","prix":10.5},{"fournisseur":"Gustant","produit":"Brocolis","unite":"kg","prix":6.49},{"fournisseur":"Gustant","produit":"Céleri Rave","unite":"u","prix":2.9},{"fournisseur":"Gustant","produit":"Chou de Bruxelles","unite":"kg","prix":8.3},{"fournisseur":"Gustant","produit":"Chou fleur","unite":"u","prix":3.0},{"fournisseur":"Gustant","produit":"Endives Blanches","unite":"kg","prix":6.7},{"fournisseur":"Gustant","produit":"Kiwi vert","unite":"kg","prix":7.92},{"fournisseur":"Gustant","produit":"Navets","unite":"kg","prix":2.8},{"fournisseur":"Gustant","produit":"Navet Boule d'or","unite":"kg","prix":6.9},{"fournisseur":"Gustant","produit":"Poire Comices - kg","unite":"kg","prix":3.5},{"fournisseur":"Gustant","produit":"Poireaux - kg","unite":"kg","prix":2.7},{"fournisseur":"Gustant","produit":"Pommes Pirouette - kg","unite":"kg","prix":2.2},{"fournisseur":"Gustant","produit":"Pommes Renoir - kg","unite":"kg","prix":2.2},{"fournisseur":"Gustant","produit":"Daïkon (radis blanc)","unite":"u","prix":4.5},{"fournisseur":"Gustant","produit":"Oeufs plein air - Moyen","unite":"u","prix":0.23},{"fournisseur":"Gustant","produit":"Chou fleur","unite":"u","prix":2.5},{"fournisseur":"Gustant","produit":"Oignons jaunes - 10kg","unite":"colis 10kg","prix":3.92},{"fournisseur":"Gustant","produit":"PDT Colomba 40/60 - 50kg","unite":"colis 50kg","prix":46.0},{"fournisseur":"Gustant","produit":"Poireaux - 10kg","unite":"colis 10kg","prix":2.7},{"fournisseur":"Gustant","produit":"Sauge","unite":"u","prix":1.6},{"fournisseur":"Gustant","produit":"Thym","unite":"u","prix":1.2},{"fournisseur":"Gustant","produit":"Poire conférences - kg","unite":"kg","prix":2.4},{"fournisseur":"Gustant","produit":"Pomme Melrose","unite":"kg","prix":2.4},{"fournisseur":"Gustant","produit":"Potimarron","unite":"kg","prix":3.5},{"fournisseur":"Gustant","produit":"Shitakée - 2kg","unite":"colis 2kg","prix":10.0},{"fournisseur":"Gustant","produit":"Ciboulette","unite":"u","prix":1.45},{"fournisseur":"Gustant","produit":"Fromage frais cottage - 5L","unite":"seau 5kg","prix":9.78},{"fournisseur":"Gustant","produit":"Consigne Seau","unite":"u","prix":1.5},{"fournisseur":"Gustant","produit":"Navets","unite":"kg","prix":2.55},{"fournisseur":"Gustant","produit":"Potimarron","unite":"kg","prix":4.95},{"fournisseur":"Gustant","produit":"Shitakée - 2kg","unite":"colis 2kg","prix":15.9},{"fournisseur":"Gustant","produit":"Curvi Rigati","unite":"5kg","prix":5.22},{"fournisseur":"Gustant","produit":"Celeri branche","unite":"kg","prix":6.9},{"fournisseur":"Gustant","produit":"Fenouil","unite":"kg","prix":7.9},{"fournisseur":"Gustant","produit":"Cresson","unite":"u","prix":4.99},{"fournisseur":"Hydropousse","produit":"Micro Wasabi","unite":"barquette","prix":3.9},{"fournisseur":"Hydropousse","produit":"Micro Tournesol","unite":"barquette","prix":4.1},{"fournisseur":"Hydropousse","produit":"Micro Pois Vert","unite":"barquette","prix":4.0},{"fournisseur":"Hydropousse","produit":"Micro Moutarde Pourpre","unite":"barquette","prix":4.2},{"fournisseur":"Hydropousse","produit":"Micro Mizuna","unite":"barquette","prix":4.1},{"fournisseur":"Hydropousse","produit":"Micro Mélisse","unite":"barquette","prix":4.5},{"fournisseur":"Hydropousse","produit":"Micro Fenouil","unite":"barquette","prix":4.0},{"fournisseur":"Hydropousse","produit":"Micro Aneth","unite":"barquette","prix":4.2},{"fournisseur":"Hydropousse","produit":"Micro Amarante","unite":"barquette","prix":4.5},{"fournisseur":"Kalios (Chorio SAS)","produit":"Yaourt Grec 8% MG 1kg","unite":"pcs","prix":4.85},{"fournisseur":"Kalios (Chorio SAS)","produit":"Pâte d'olives Kalamata 1.6kg","unite":"pcs","prix":24.0},{"fournisseur":"La Ferme d'Alexandre","produit":"Beurre Motte 5kg","unite":"kg","prix":9.05},{"fournisseur":"La Ferme d'Alexandre","produit":"Crème UHT 35% Bridel 1L","unite":"L","prix":4.85},{"fournisseur":"La Ferme d'Alexandre","produit":"Oeuf Blanc Liquide Plein Air 1kg","unite":"kg","prix":4.99},{"fournisseur":"La Ferme d'Alexandre","produit":"Oeuf Jaune Liquide Plein Air 1kg","unite":"kg","prix":8.79},{"fournisseur":"La Ferme d'Alexandre","produit":"Lait Entier Verneuil 1L","unite":"L","prix":1.15},{"fournisseur":"La Ferme d'Alexandre","produit":"Beurre Extra Sec 84% E&V 1kg","unite":"kg","prix":12.1},{"fournisseur":"Maison Borniambuc","produit":"Crème fermière 45% MG (5L)","unite":"L","prix":7.5},{"fournisseur":"Maison Borniambuc","produit":"Fromage blanc lissé fermier 40% MG","unite":"kg","prix":4.8},{"fournisseur":"Maison Borniambuc","produit":"Fleurette fermière 35% MG (5L)","unite":"L","prix":5.6},{"fournisseur":"Maison Montalet","produit":"Chorizo","unite":"kg","prix":26.1},{"fournisseur":"Maison Montalet","produit":"Chorizo (remise 5%)","unite":"kg","prix":24.795},{"fournisseur":"Maison Montalet","produit":"Echine s/os s/vide (remise 30%)","unite":"kg","prix":9.835},{"fournisseur":"Riant Thierry","produit":"Céleri Rave","unite":"kg","prix":2.5},{"fournisseur":"Riant Thierry","produit":"Salsifi","unite":"kg","prix":3.8},{"fournisseur":"Riant Thierry","produit":"Epinard","unite":"kg","prix":3.8},{"fournisseur":"Riant Thierry","produit":"Poireaux","unite":"kg","prix":3.8},{"fournisseur":"Riant Thierry","produit":"Patate Douce","unite":"kg","prix":3.9},{"fournisseur":"Riant Thierry","produit":"Chou Vert","unite":"kg","prix":2.8},{"fournisseur":"Riant Thierry","produit":"Endive Plein Champ","unite":"kg","prix":6.8},{"fournisseur":"Riant Thierry","produit":"Transport","unite":"forfait","prix":10.0},{"fournisseur":"Riant Thierry","produit":"Persil Racine","unite":"kg","prix":4.8},{"fournisseur":"Riant Thierry","produit":"Mâche Plein Champ","unite":"kg","prix":10.0},{"fournisseur":"Riant Thierry","produit":"Cresson Botte","unite":"botte","prix":2.2},{"fournisseur":"Terroirs d'Avenir","produit":"Citron sicilien (colis 6kg)","unite":"colis","prix":3.9},{"fournisseur":"Terroirs d'Avenir","produit":"Orange (colis)","unite":"colis","prix":3.9},{"fournisseur":"Terroirs d'Avenir","produit":"Pamplemousse (colis 10kg)","unite":"colis","prix":4.3},{"fournisseur":"Terroirs d'Avenir","produit":"Poulette jaune Garat","unite":"pièce","prix":7.9},{"fournisseur":"Terroirs d'Avenir","produit":"Pamplemousse (colis)","unite":"colis","prix":4.9},{"fournisseur":"Terroirs d'Avenir","produit":"Orange demi-sanguine tarocco","unite":"colis","prix":4.9},{"fournisseur":"Terroirs d'Avenir","produit":"Chinchard","unite":"pièce","prix":14.5},{"fournisseur":"Terroirs d'Avenir","produit":"Bergamote","unite":"colis","prix":6.2},{"fournisseur":"Terroirs d'Avenir","produit":"Blette (vrac)","unite":"colis","prix":4.5},{"fournisseur":"Terroirs d'Avenir","produit":"Brocoli vert (vrac)","unite":"colis","prix":4.3},{"fournisseur":"Terroirs d'Avenir","produit":"Carotte orange (vrac)","unite":"colis","prix":2.3},{"fournisseur":"Terroirs d'Avenir","produit":"Pamplemousse (colis 20kg)","unite":"colis","prix":4.3},{"fournisseur":"Terroirs d'Avenir","produit":"Riz long rouge AB 1kg - Domaine de Beaujeu","unite":"colis","prix":8.0},{"fournisseur":"Terroirs d'Avenir","produit":"Chinchard","unite":"pièce","prix":14.0},{"fournisseur":"Terroirs d'Avenir","produit":"Maquereau","unite":"pièce","prix":16.5},{"fournisseur":"Terroirs d'Avenir","produit":"Chinchard","unite":"pièce","prix":15.5},{"fournisseur":"Terroirs d'Avenir","produit":"Poire","unite":"colis","prix":4.2},{"fournisseur":"Terroirs d'Avenir","produit":"Foin (vrac)","unite":"colis","prix":5.6},{"fournisseur":"Tesson","produit":"Lotte-Baudroie","unite":"kg","prix":22.8},{"fournisseur":"Tesson","produit":"Dorade Grise","unite":"kg","prix":9.5},{"fournisseur":"Tesson","produit":"Merlan","unite":"kg","prix":9.95},{"fournisseur":"Tesson","produit":"Coquilles Saint-Jacques","unite":"kg","prix":5.7},{"fournisseur":"Tesson","produit":"Lotte-Baudroie","unite":"kg","prix":23.0},{"fournisseur":"Tesson","produit":"Merlan","unite":"kg","prix":10.5},{"fournisseur":"Tesson","produit":"Rouget Barbet","unite":"kg","prix":15.5},{"fournisseur":"Tesson","produit":"Coquilles Saint-Jacques","unite":"kg","prix":5.9},{"fournisseur":"Tesson","produit":"Lotte-Baudroie","unite":"kg","prix":23.5},{"fournisseur":"Tesson","produit":"Merlan","unite":"kg","prix":11.0},{"fournisseur":"Tesson","produit":"Rouget Barbet","unite":"kg","prix":21.5},{"fournisseur":"Tesson","produit":"Turbot","unite":"kg","prix":24.0},{"fournisseur":"Tesson","produit":"Merlan","unite":"kg","prix":11.5},{"fournisseur":"TFB Saint-Ferdinand","produit":"Tourte de meule bio","unite":"unité","prix":6.21},{"fournisseur":"Truffe Extra France","produit":"Tuber Melanosporum fraîche MCX +30g","unite":"g","prix":0.78},{"fournisseur":"Truffe Extra France","produit":"Expédition","unite":"forfait","prix":30.0},{"fournisseur":"Umami","produit":"Huile de sésame Kuki 340g (intensité moyenne)","unite":"u","prix":9.91},{"fournisseur":"Umami","produit":"Hon Mirin véritable 1.8L","unite":"u","prix":21.23},{"fournisseur":"Umami","produit":"Sauce soja Marudaizu Koikuchi 1.8L","unite":"u","prix":7.02},{"fournisseur":"Umami","produit":"Vinaigre de Riz pur 1800ml","unite":"u","prix":10.3},{"fournisseur":"Umami","produit":"Sésame blanc torréfié 1kg","unite":"u","prix":17.71}];
+
+let MERCURIALE = MERCURIALE_BASE.map((r,i)=>({...r,_id:i}));
+let _nextId = MERCURIALE.length;
+let currentFile = null, resultsData = [], pendingNew = [], editingId = null;
+
+const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+
+function switchTab(t, el) {
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active'); el.classList.add('active');
+}
+function updateHeader() {
+  const n = MERCURIALE.filter(r=>r.isNew).length;
+  document.getElementById('headerSub').textContent = `${MERCURIALE.length} produits · ${[...new Set(MERCURIALE.map(r=>r.fournisseur))].length} fournisseurs${n?' · '+n+' nouveau'+(n>1?'x':'')+' ajouté'+(n>1?'s':''):''}`;
+}
+// MODAL
+function openModal(id) {
+  editingId = id!==undefined?id:null;
+  const m = editingId!==null?MERCURIALE.find(r=>r._id===editingId):null;
+  document.getElementById('modalTitle').textContent = m?'Modifier le produit':'Ajouter un produit';
+  document.getElementById('mFourn').value = m?m.fournisseur:'';
+  document.getElementById('mProduit').value = m?m.produit:'';
+  document.getElementById('mUnite').value = m?m.unite:'';
+  document.getElementById('mPrix').value = m?m.prix:'';
+  document.getElementById('modalErr').style.display='none';
+  const dl=document.getElementById('fournList');
+  dl.innerHTML=[...new Set(MERCURIALE.map(r=>r.fournisseur))].sort().map(f=>`<option value="${f}">`).join('');
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); editingId=null; }
+function handleOverlayClick(e) { if(e.target===document.getElementById('modalOverlay')) closeModal(); }
+function saveModal() {
+  const f=document.getElementById('mFourn').value.trim();
+  const p=document.getElementById('mProduit').value.trim();
+  const u=document.getElementById('mUnite').value.trim();
+  const px=parseFloat(document.getElementById('mPrix').value);
+  const err=document.getElementById('modalErr');
+  if(!f||!p||!u||isNaN(px)||px<=0){err.textContent='Tous les champs sont obligatoires.';err.style.display='block';return;}
+  if(editingId!==null){const i=MERCURIALE.findIndex(r=>r._id===editingId);if(i>-1)MERCURIALE[i]={...MERCURIALE[i],fournisseur:f,produit:p,unite:u,prix:px};}
+  else MERCURIALE.push({fournisseur:f,produit:p,unite:u,prix:px,isNew:true,_id:_nextId++});
+  closeModal(); updateHeader(); initFournFilter(); filterTable();
+}
+function deleteRow(id) {
+  if(!confirm('Supprimer ce produit ?')) return;
+  MERCURIALE=MERCURIALE.filter(r=>r._id!==id);
+  updateHeader(); initFournFilter(); filterTable();
+}
+// TABLE
+function initFournFilter() {
+  const s=document.getElementById('filterFourn'), cur=s.value;
+  s.innerHTML='<option value="">Tous les fournisseurs</option>';
+  [...new Set(MERCURIALE.map(r=>r.fournisseur))].sort().forEach(f=>{
+    const o=document.createElement('option');o.value=f;o.textContent=f;if(f===cur)o.selected=true;s.appendChild(o);
+  });
+}
+function renderTable(rows) {
+  document.getElementById('tableBody').innerHTML=rows.map(r=>`
+    <tr>
+      <td>${r.isNew?'<span class="badge badge-new">NEW</span>':''}</td>
+      <td><span class="badge badge-info">${r.fournisseur}</span></td>
+      <td class="truncate" title="${r.produit}">${r.produit}</td>
+      <td style="color:var(--text2)">${r.unite}</td>
+      <td style="text-align:right;font-weight:600">${r.prix.toFixed(3)} €</td>
+      <td style="text-align:right">
+        <button class="btn btn-sm" onclick="openModal(${r._id})">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteRow(${r._id})">🗑</button>
+      </td>
+    </tr>`).join('');
+  document.getElementById('countLabel').textContent=`${rows.length} produit${rows.length>1?'s':''} affiché${rows.length>1?'s':''}`;
+}
+function filterTable() {
+  const q=norm(document.getElementById('searchInput').value);
+  const f=document.getElementById('filterFourn').value;
+  renderTable(MERCURIALE.filter(r=>(!q||norm(r.produit).includes(q)||norm(r.fournisseur).includes(q))&&(!f||r.fournisseur===f)));
+}
+// DROP / FILE
+function handleDragOver(e){e.preventDefault();document.getElementById('dropZone').classList.add('over');}
+function handleDragLeave(){document.getElementById('dropZone').classList.remove('over');}
+function handleDrop(e){e.preventDefault();document.getElementById('dropZone').classList.remove('over');const f=e.dataTransfer.files[0];if(f&&f.type==='application/pdf')setFile(f);else showErr('Veuillez déposer un fichier PDF.');}
+function handleFileSelect(e){if(e.target.files[0])setFile(e.target.files[0]);}
+function setFile(f){currentFile=f;document.getElementById('fileName').textContent=f.name;document.getElementById('filePill').style.display='block';document.getElementById('analyzeBtn').disabled=false;document.getElementById('errorBlock').style.display='none';document.getElementById('results').style.display='none';}
+function clearFile(){currentFile=null;document.getElementById('filePill').style.display='none';document.getElementById('fileInput').value='';document.getElementById('analyzeBtn').disabled=true;}
+function clearAll(){clearFile();document.getElementById('results').style.display='none';document.getElementById('progressWrap').style.display='none';document.getElementById('errorBlock').style.display='none';}
+function showErr(m){const e=document.getElementById('errorBlock');e.textContent=m;e.style.display='block';}
+function setProgress(pct,label){document.getElementById('progressWrap').style.display='block';document.getElementById('progressLabel').textContent=label;document.getElementById('progressBar').style.width=pct+'%';}
+function fileToBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=()=>rej(new Error('Erreur lecture'));r.readAsDataURL(file);});}
+// ANALYSE
+async function analyzePDF(){
+  if(!currentFile)return;
+  document.getElementById('analyzeBtn').disabled=true;
+  document.getElementById('errorBlock').style.display='none';
+  document.getElementById('results').style.display='none';
+  try{
+    setProgress(15,'Lecture du PDF...');
+    const b64=await fileToBase64(currentFile);
+    setProgress(35,'Envoi à Claude pour extraction...');
+    const mStr=MERCURIALE.map(r=>`${r.fournisseur} | ${r.produit} | ${r.unite} | ${r.prix}`).join('\n');
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,messages:[{role:'user',content:[{type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},{type:'text',text:`Tu es un assistant spécialisé en analyse de factures fournisseurs pour la restauration.\n\nMercuriale de référence BONALOI :\n${mStr}\n\nAnalyse ce PDF et extrait TOUTES les lignes produits avec prix unitaire HT. Pour chaque ligne, trouve le meilleur match dans la mercuriale (matching flou).\n\nRéponds UNIQUEMENT en JSON valide :\n{"lignes":[{"fournisseur":"...","produit":"...","unite":"...","prix_facture":12.50,"match_mercuriale":{"trouve":true,"produit_ref":"...","prix_negocie":11.00}}]}`}]}]})});
+    setProgress(80,'Analyse des écarts...');
+    if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||'Erreur API');}
+    const data=await resp.json();
+    const text=data.content.map(i=>i.text||'').join('');
+    const parsed=JSON.parse(text.replace(/```json|```/g,'').trim());
+    setProgress(100,'Terminé !');
+    setTimeout(()=>{document.getElementById('progressWrap').style.display='none';},700);
+    resultsData=parsed.lignes.map(l=>({fournisseur:l.fournisseur,produit:l.produit,unite:l.unite,prixFacture:l.prix_facture,found:l.match_mercuriale?.trouve||false,produitRef:l.match_mercuriale?.produit_ref||null,prixNegocie:l.match_mercuriale?.prix_negocie||null,ecart:l.match_mercuriale?.trouve?l.prix_facture-l.match_mercuriale.prix_negocie:null,ecartPct:l.match_mercuriale?.trouve?(l.prix_facture-l.match_mercuriale.prix_negocie)/l.match_mercuriale.prix_negocie*100:null}));
+    pendingNew=resultsData.filter(r=>!r.found);
+    renderResults(resultsData);
+  }catch(err){document.getElementById('progressWrap').style.display='none';showErr('Erreur : '+err.message+' — Si le problème persiste, envoyez le PDF directement dans Claude.ai pour l\'analyse.');}
+  finally{document.getElementById('analyzeBtn').disabled=false;}
+}
+function addNewToMercuriale(){
+  pendingNew.forEach(r=>MERCURIALE.push({fournisseur:r.fournisseur,produit:r.produit,unite:r.unite,prix:r.prixFacture,isNew:true,_id:_nextId++}));
+  const n=pendingNew.length; pendingNew=[];
+  document.getElementById('addNewBtn').style.display='none';
+  const b=document.getElementById('newBanner');
+  b.textContent=`✓ ${n} produit${n>1?'s':''} ajouté${n>1?'s':''} à la mercuriale.`;
+  b.style.display='block';
+  updateHeader(); initFournFilter(); filterTable();
+}
+function filterResults(val){
+  let d=resultsData;
+  if(val==='surcharge')d=resultsData.filter(r=>r.found&&r.ecart>0.01);
+  else if(val==='ok')d=resultsData.filter(r=>r.found&&Math.abs(r.ecart)<=0.01);
+  else if(val==='notfound')d=resultsData.filter(r=>!r.found);
+  renderResultsRows(d);
+}
+function renderResults(data){
+  document.getElementById('results').style.display='block';
+  const surge=data.filter(r=>r.found&&r.ecart>0.01);
+  const ok=data.filter(r=>r.found&&Math.abs(r.ecart)<=0.01);
+  const nf=data.filter(r=>!r.found);
+  const tot=surge.reduce((s,r)=>s+r.ecart,0);
+  document.getElementById('statsGrid').innerHTML=`
+    <div class="stat"><div class="stat-label">Lignes analysées</div><div class="stat-value">${data.length}</div></div>
+    <div class="stat"><div class="stat-label">Sur-facturations</div><div class="stat-value red">${surge.length}</div></div>
+    <div class="stat"><div class="stat-label">Conformes</div><div class="stat-value green">${ok.length}</div></div>
+    <div class="stat"><div class="stat-label">Écart total</div><div class="stat-value ${tot>0?'red':''}">${tot>0?'+':''}${tot.toFixed(2)} €</div></div>`;
+  document.getElementById('resultsTitle').textContent=`${surge.length} écart${surge.length>1?'s':''} détecté${surge.length>1?'s':''} sur ${data.length} lignes`;
+  document.getElementById('addNewBtn').style.display=nf.length>0?'block':'none';
+  document.getElementById('newBanner').style.display='none';
+  renderResultsRows(data);
+}
+function renderResultsRows(data){
+  document.getElementById('resultsBody').innerHTML=data.map(r=>{
+    if(!r.found)return`<tr><td><span class="badge badge-new">+</span></td><td><span class="badge badge-warning">${r.fournisseur}</span></td><td class="truncate" title="${r.produit}">${r.produit}</td><td style="text-align:right">${r.prixFacture.toFixed(2)} €</td><td style="text-align:right;color:var(--text3)">—</td><td style="text-align:right"><span class="badge badge-warning">Non trouvé</span></td></tr>`;
+    const surge=r.ecart>0.01,ok=Math.abs(r.ecart)<=0.01;
+    const bc=surge?'badge-danger':ok?'badge-success':'badge-info';
+    const el=ok?'Conforme':`${r.ecart>0?'+':''}${r.ecart.toFixed(2)} € (${r.ecartPct>0?'+':''}${r.ecartPct.toFixed(1)}%)`;
+    return`<tr><td></td><td><span class="badge badge-info">${r.fournisseur}</span></td><td class="truncate" title="${r.produitRef||r.produit}">${r.produit}</td><td style="text-align:right">${r.prixFacture.toFixed(2)} €</td><td style="text-align:right;color:var(--text2)">${r.prixNegocie?r.prixNegocie.toFixed(3)+' €':'—'}</td><td style="text-align:right"><span class="badge ${bc}">${el}</span></td></tr>`;
+  }).join('');
+}
+initFournFilter(); renderTable(MERCURIALE); updateHeader();
+</script>
+</body>
+</html>
